@@ -1,0 +1,129 @@
+﻿@page "/personas"
+@using Segunda4F.Repositorios
+@rendermode InteractiveServer
+@inject IRepositorioPersonas _repositorioPersonas
+<h3>Personas</h3>
+
+<EditForm Model="_persona" FormName="frmPersona" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row mb-3 align-items-center">
+        <div class="col-2">
+            <label for="txtNombre" class="col-form-label">Nombre</label>
+        </div>
+        <div class="col-10">
+            <InputText class="form-control" id="txtNombre" @bind-Value="_persona.Nombre" />
+            <ValidationMessage For="@(() => _persona.Nombre)" />
+        </div>
+    </div>
+    <div class="row mb-3 align-items-center">
+        <div class="col-2">
+            <label for="txtTelefono" class="col-form-label">Teléfono</label>
+        </div>
+        <div class="col-10">
+            <InputText class="form-control" id="txtTelefono" @bind-Value="_persona.Telefono" />
+            <ValidationMessage For="@(() => _persona.Telefono)" />
+        </div>
+    </div>
+    <div class="row mb-3 align-items-center">
+        <div class="col-2">
+            <label for="txtCorreo" class="col-form-label">Correo</label>
+        </div>
+        <div class="col-10">
+            <InputText type="email" class="form-control" id="txtCorreo" @bind-Value="_persona.Correo" />
+            <ValidationMessage For="@(() => _persona.Correo)" />
+        </div>
+    </div>
+    <div class="row mb-3 align-items-center">
+        <div class="col-2">
+            <label class="col-form-label">Género</label>
+        </div>
+        <div class="col-10">
+            <InputRadioGroup @bind-Value="_persona.Genero">
+                <div class="form-check form-check-inline">
+                    <InputRadio class="form-check-input" id="genFemenino" Value="@("Femenino")" />
+                    <label class="form-check-label" for="genFemenino">Femenino</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <InputRadio class="form-check-input" id="genMasculino" Value="@("Masculino")" />
+                    <label class="form-check-label" for="genMasculino">Masculino</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <InputRadio class="form-check-input" id="genOtro" Value="@("Otro")" />
+                    <label class="form-check-label" for="genOtro">Otro</label>
+                </div>
+            </InputRadioGroup>
+            <ValidationMessage For="@(() => _persona.Genero)" />
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</EditForm>
+
+<QuickGrid Items="_personas.AsQueryable()" Class="table table-striped" Pagination="_paginationState">
+    <PropertyColumn Property="@(p => p.Nombre)" Title="Nombre" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Telefono)" Title="Teléfono" />
+    <PropertyColumn Property="@(p => p.Correo)" Title="Correo" />
+    <PropertyColumn Property="@(p => p.Genero)" Title="Género" Sortable="true" />
+</QuickGrid>
+<Paginator State="_paginationState" />
+
+@* <table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Género</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var persona in _personas)
+        {
+            <tr>
+                <td>@persona.Nombre</td>
+                <td>@persona.Telefono</td>
+                <td>@persona.Correo</td>
+                <td>@persona.Genero</td>
+            </tr>
+        }
+    </tbody>
+</table> *@
+
+@code {
+    private List<Persona> _personas = new List<Persona>();
+    private Persona _persona = new Persona();
+    private PaginationState _paginationState = new PaginationState { ItemsPerPage = 5 };
+
+    override protected async Task OnInitializedAsync()
+    {
+        _personas = await _repositorioPersonas.ObtenerPersonas();
+    }
+
+
+    // override protected void OnInitialized()
+    // {
+    //     _personas.Add(new Persona { Nombre = "Juan", Telefono = "111111111", Correo = "juan@example.com", Genero = "Masculino" });
+    //     _personas.Add(new Persona { Nombre = "María", Telefono = "222222222", Correo = "maria@example.com", Genero = "Femenino" });
+    //     _personas.Add(new Persona { Nombre = "Pedro", Telefono = "333333333", Correo = "pedro@example.com", Genero = "Masculino" });
+    //     _personas.Add(new Persona { Nombre = "Ana", Telefono = "444444444", Correo = "ana@example.com", Genero = "Femenino" });
+    //     _personas.Add(new Persona { Nombre = "Luis", Telefono = "555555555", Correo = "luis@example.com", Genero = "Masculino" });
+    //     // Agraga 20 personas más
+    //     for (int i = 1; i <= 20; i++)
+    //     {
+    //         _personas.Add(new Persona
+    //         {
+    //             Nombre = $"Persona {i}",
+    //             Telefono = $"00000000{i:D2}",
+    //             Correo = $"persona{i}@example.com",
+    //             Genero = (i % 2 == 0) ? "Femenino" : "Masculino"
+    //         });
+    //     }
+    // }
+
+    private void Guardar()
+    {
+        _personas.Add(_persona);
+        _persona = new Persona();
+    }
+}
+
