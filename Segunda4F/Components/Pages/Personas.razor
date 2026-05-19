@@ -1,69 +1,20 @@
 ﻿@page "/personas"
-@using Segunda4F.Repositorios
+@using System.Threading.Tasks
 @rendermode InteractiveServer
 @inject IRepositorioPersonas _repositorioPersonas
+@inject NavigationManager _navigationManager
 <h3>Personas</h3>
-
-<EditForm Model="_persona" FormName="frmPersona" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div class="row mb-3 align-items-center">
-        <div class="col-2">
-            <label for="txtNombre" class="col-form-label">Nombre</label>
-        </div>
-        <div class="col-10">
-            <InputText class="form-control" id="txtNombre" @bind-Value="_persona.Nombre" />
-            <ValidationMessage For="@(() => _persona.Nombre)" />
-        </div>
-    </div>
-    <div class="row mb-3 align-items-center">
-        <div class="col-2">
-            <label for="txtTelefono" class="col-form-label">Teléfono</label>
-        </div>
-        <div class="col-10">
-            <InputText class="form-control" id="txtTelefono" @bind-Value="_persona.Telefono" />
-            <ValidationMessage For="@(() => _persona.Telefono)" />
-        </div>
-    </div>
-    <div class="row mb-3 align-items-center">
-        <div class="col-2">
-            <label for="txtCorreo" class="col-form-label">Correo</label>
-        </div>
-        <div class="col-10">
-            <InputText type="email" class="form-control" id="txtCorreo" @bind-Value="_persona.Correo" />
-            <ValidationMessage For="@(() => _persona.Correo)" />
-        </div>
-    </div>
-    <div class="row mb-3 align-items-center">
-        <div class="col-2">
-            <label class="col-form-label">Género</label>
-        </div>
-        <div class="col-10">
-            <InputRadioGroup @bind-Value="_persona.Genero">
-                <div class="form-check form-check-inline">
-                    <InputRadio class="form-check-input" id="genFemenino" Value="@("Femenino")" />
-                    <label class="form-check-label" for="genFemenino">Femenino</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <InputRadio class="form-check-input" id="genMasculino" Value="@("Masculino")" />
-                    <label class="form-check-label" for="genMasculino">Masculino</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <InputRadio class="form-check-input" id="genOtro" Value="@("Otro")" />
-                    <label class="form-check-label" for="genOtro">Otro</label>
-                </div>
-            </InputRadioGroup>
-            <ValidationMessage For="@(() => _persona.Genero)" />
-        </div>
-    </div>
-    <button type="submit" class="btn btn-primary">Guardar</button>
-</EditForm>
+<button class="btn btn-primary mb-3" @onclick="@(() => _navigationManager.NavigateTo("/personas/nueva"))">Nueva Persona</button>
 
 <QuickGrid Items="_personas.AsQueryable()" Class="table table-striped" Pagination="_paginationState">
     <PropertyColumn Property="@(p => p.Nombre)" Title="Nombre" Sortable="true" />
     <PropertyColumn Property="@(p => p.Telefono)" Title="Teléfono" />
     <PropertyColumn Property="@(p => p.Correo)" Title="Correo" />
     <PropertyColumn Property="@(p => p.Genero)" Title="Género" Sortable="true" />
+    <TemplateColumn Title="Actions">
+        <button class="btn btn-outline-primary" @onclick="@(() => Edit(context))">Editar</button>
+        <button class="btn btn-outline-danger" @onclick="@(() => Delete(context))">Eliminar</button>
+    </TemplateColumn>
 </QuickGrid>
 <Paginator State="_paginationState" />
 
@@ -120,10 +71,18 @@
     //     }
     // }
 
-    private void Guardar()
+    private void Edit(Persona persona)
     {
-        _personas.Add(_persona);
-        _persona = new Persona();
+        _navigationManager.NavigateTo($"/personas/editar/{persona.Id}");
+    }
+
+    private async Task Delete(Persona persona)
+    {
+        if (persona != null)
+        {
+            await _repositorioPersonas.EliminarPersona(persona.Id);
+            _personas.Remove(persona);
+        }
     }
 }
 

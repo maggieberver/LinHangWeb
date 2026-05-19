@@ -1,0 +1,40 @@
+﻿@page "/clasificaciones"
+@rendermode InteractiveServer
+@inject NavigationManager _navigationManager
+@inject IRepositorioClasificaciones _repositorioClasificaciones
+<PageTitle>Clasificaciones</PageTitle>
+<h3>Clasificaciones</h3>
+<button class="btn btn-primary mb-3" @onclick="@(() => _navigationManager.NavigateTo("/clasificaciones/nueva"))">Nueva Clasificación</button>
+
+<QuickGrid Items="_clasificaciones.AsQueryable()" Class="table table-striped" Pagination="_paginationState">
+    <PropertyColumn Property="@(p => p.Nombre)" Title="Nombre" Sortable="true" />
+    <TemplateColumn Title="Actions">
+        <button class="btn btn-outline-primary" @onclick="@(() => Edit(context))">Editar</button>
+        <button class="btn btn-outline-danger" @onclick="@(() => Delete(context))">Eliminar</button>
+    </TemplateColumn>
+</QuickGrid>
+<Paginator State="_paginationState" />
+
+@code {
+    private List<Clasificacion> _clasificaciones = new List<Clasificacion>();
+    private Clasificacion _clasificacion = new Clasificacion();
+    private PaginationState _paginationState = new PaginationState { ItemsPerPage = 5 };
+    override protected async Task OnInitializedAsync()
+    {
+        _clasificaciones = await _repositorioClasificaciones.ObtenerClasificaciones();
+    }
+
+    private void Edit(Clasificacion clasificacion)
+    {
+        _navigationManager.NavigateTo($"/clasificaciones/editar/{clasificacion.Id}");
+    }
+
+    private async Task Delete(Clasificacion clasificacion)
+    {
+        if (clasificacion != null)
+        {
+            await _repositorioClasificaciones.EliminarClasificacion(clasificacion.Id);
+            _clasificaciones.Remove(clasificacion);
+        }
+    }
+}

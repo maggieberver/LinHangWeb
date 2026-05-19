@@ -6,7 +6,7 @@ namespace Segunda4F.Repositorios
     {
         Task AgregarPersona(Persona persona);
         Task<List<Persona>> ObtenerPersonas();
-        Task<Persona> ObtenerPersonaPorId(int id);
+        Task<Persona?> ObtenerPersonaPorId(int id);
         Task ActualizarPersona(Persona persona);
         Task EliminarPersona(int id);
     }

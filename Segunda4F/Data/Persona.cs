@@ -15,5 +15,7 @@ namespace Segunda4F.Data
         public string? Correo { get; set; }
         [Required(ErrorMessage = "El género es obligatorio.")]
         public string? Genero { get; set; }
+        public int ClasificacionId { get; set; }
+        virtual public Clasificacion? Clasificacion { get; set; }
     }
 }

@@ -11,24 +11,34 @@ namespace Segunda4F.Repositorios
             _context = context;
         }
 
-        public Task ActualizarPersona(Persona persona)
+        public async Task ActualizarPersona(Persona persona)
         {
-            throw new NotImplementedException();
+            var personaExistente = await _context.Personas.FindAsync(persona.Id);
+            if (personaExistente == null)
+            {
+                throw new Exception("Persona no encontrada");
+            }
+            personaExistente.Nombre = persona.Nombre;
+            personaExistente.Telefono = persona.Telefono;
+            personaExistente.Correo = persona.Correo;
+            await _context.SaveChangesAsync();
         }
 
-        public Task AgregarPersona(Persona persona)
+        public async Task AgregarPersona(Persona persona)
         {
-            throw new NotImplementedException();
+            await _context.Personas.AddAsync(persona);
+            await _context.SaveChangesAsync();
         }
 
-        public Task EliminarPersona(int id)
+        public async Task EliminarPersona(int id)
         {
-            throw new NotImplementedException();
+            await _context.Personas.Where(p => p.Id == id).ExecuteDeleteAsync();
+            await _context.SaveChangesAsync();
         }
 
-        public Task<Persona> ObtenerPersonaPorId(int id)
+        public async Task<Persona?> ObtenerPersonaPorId(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Personas.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<List<Persona>> ObtenerPersonas()

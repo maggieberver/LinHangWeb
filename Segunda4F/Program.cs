@@ -12,6 +12,7 @@ builder.Services.AddDbContext<DirectorioDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IRepositorioPersonas, RepositorioPersonas>();
+builder.Services.AddScoped<IRepositorioClasificaciones,RepositorioClasificaciones>();
 
 var app = builder.Build();
 
