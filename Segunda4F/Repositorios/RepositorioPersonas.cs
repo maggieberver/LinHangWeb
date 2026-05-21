@@ -21,6 +21,8 @@ namespace Segunda4F.Repositorios
             personaExistente.Nombre = persona.Nombre;
             personaExistente.Telefono = persona.Telefono;
             personaExistente.Correo = persona.Correo;
+            personaExistente.Genero = persona.Genero;
+            personaExistente.Habitos = persona.Habitos;
             await _context.SaveChangesAsync();
         }
 
@@ -38,12 +40,12 @@ namespace Segunda4F.Repositorios
 
         public async Task<Persona?> ObtenerPersonaPorId(int id)
         {
-            return await _context.Personas.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Personas.AsNoTracking().Include(a=>a.Habitos).FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<List<Persona>> ObtenerPersonas()
         {
-            return await _context.Personas.ToListAsync();
+            return await _context.Personas.AsNoTracking().Include(c => c.Clasificacion).Include(a => a.Habitos).ToListAsync();
         }
     }
 }

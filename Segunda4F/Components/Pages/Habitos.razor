@@ -1,0 +1,40 @@
+﻿@page "/habitos"
+@rendermode InteractiveServer
+@inject NavigationManager _navigationManager
+@inject IRepositorioHabitos _repositorioHabitos
+<PageTitle>Hábitos</PageTitle>
+<h3>Hábitos</h3>
+<button class="btn btn-primary mb-3" @onclick="@(() => _navigationManager.NavigateTo("/habitos/nuevo"))">Nuevo hábito</button>
+
+<QuickGrid Items="_habitos.AsQueryable()" Class="table table-striped" Pagination="_paginationState">
+    <PropertyColumn Property="@(p => p.Nombre)" Title="Nombre" Sortable="true" />
+    <TemplateColumn Title="Actions">
+        <button class="btn btn-outline-primary" @onclick="@(() => Edit(context))">Editar</button>
+        <button class="btn btn-outline-danger" @onclick="@(() => Delete(context))">Eliminar</button>
+    </TemplateColumn>
+</QuickGrid>
+<Paginator State="_paginationState" />
+
+@code {
+    private List<Habito> _habitos= new List<Habito>();
+    private Habito _habito= new();
+    private PaginationState _paginationState = new PaginationState { ItemsPerPage = 5 };
+    override protected async Task OnInitializedAsync()
+    {
+        _habitos = await _repositorioHabitos.ObtenerHabitos();
+    }
+
+    private void Edit(Habito habito)
+    {
+        _navigationManager.NavigateTo($"/habitos/editar/{habito.Id}");
+    }
+
+    private async Task Delete(Habito habito)
+    {
+        if (habito!= null)
+        {
+            await _repositorioHabitos.EliminarHabito(habito.Id);
+            _habitos.Remove(habito);
+        }
+    }
+}

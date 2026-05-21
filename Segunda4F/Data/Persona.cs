@@ -15,7 +15,9 @@ namespace Segunda4F.Data
         public string? Correo { get; set; }
         [Required(ErrorMessage = "El género es obligatorio.")]
         public string? Genero { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar clasificación.")]
         public int ClasificacionId { get; set; }
         virtual public Clasificacion? Clasificacion { get; set; }
+        virtual public List<Habito>? Habitos { get; set; }
     }
 }

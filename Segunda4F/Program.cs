@@ -13,6 +13,7 @@ builder.Services.AddDbContext<DirectorioDBContext>(options =>
 
 builder.Services.AddScoped<IRepositorioPersonas, RepositorioPersonas>();
 builder.Services.AddScoped<IRepositorioClasificaciones,RepositorioClasificaciones>();
+builder.Services.AddScoped<IRepositorioHabitos, RepositorioHabitos>();
 
 var app = builder.Build();
 

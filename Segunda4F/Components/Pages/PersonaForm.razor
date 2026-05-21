@@ -2,6 +2,8 @@
 @page "/personas/editar/{Id:int}"
 @rendermode InteractiveServer
 @inject IRepositorioPersonas _repositorioPersonas
+@inject IRepositorioClasificaciones _repositorioClasificaciones
+@inject IRepositorioHabitos _repositorioHabitos
 @inject NavigationManager _navigationManager
 <PageTitle>Persona</PageTitle>
 <h3>Persona</h3>
@@ -64,6 +66,51 @@ else
                 <ValidationMessage For="@(() => _persona.Genero)" />
             </div>
         </div>
+        <div class="row mb-3 align-items-center">
+            <div class="col-2">
+                <label for="ddlClasificacion" class="col-form-label">Clasificación</label>
+            </div>
+            <div class="col-10">
+                <InputSelect class="form-select" id="ddlClasificacion" @bind-Value="_persona.ClasificacionId">
+                    <option value="">-- Seleccione --</option>
+                    @foreach (var c in _clasificaciones)
+                    {
+                        <option value="@c.Id">@c.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => _persona.ClasificacionId)" />
+            </div>
+        </div>
+
+        <!-- Hábitos (checkboxes) -->
+        <div class="row mb-3 align-items-start">
+            <div class="col-2">
+                <label class="col-form-label">Hábitos</label>
+            </div>
+            <div class="col-10">
+                @if (_habitos != null && _habitos.Any())
+                {
+                    <div class="d-flex flex-wrap">
+                        @foreach (var h in _habitos)
+                        {
+                            <div class="form-check me-3">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="habito_@h.Id"
+                                       checked="@IsHabitoSelected(h.Id)"
+                                       @onchange="(ChangeEventArgs e) => OnHabitoChanged(h.Id, Convert.ToBoolean(e.Value))" />
+                                <label class="form-check-label" for="habito_@h.Id">@h.Nombre</label>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">No hay hábitos disponibles.</div>
+                }
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">Guardar</button>
         <button type="button" class="btn btn-secondary ms-2" @onclick="@(() => _navigationManager.NavigateTo("/personas"))">Cancelar</button>
     </EditForm>
@@ -74,10 +121,15 @@ else
     public int? Id { get; set; }
     private Persona? _persona = new Persona();
     private bool _error = false;
+    private List<Clasificacion> _clasificaciones = new List<Clasificacion>();
+    private List<Habito> _habitos = new();
+    private List<int> _habitosSeleccionados = new();
 
     // Usamos OnParametersSetAsync para manejar rutas con parámetros correctamente.
     protected override async Task OnParametersSetAsync()
     {
+        _clasificaciones = await _repositorioClasificaciones.ObtenerClasificaciones();
+        _habitos = await _repositorioHabitos.ObtenerHabitos();
         if (Id.HasValue && Id.Value > 0)
         {
             var p = await _repositorioPersonas.ObtenerPersonaPorId(Id.Value);
@@ -89,18 +141,40 @@ else
             else
             {
                 _persona = p;
+                // Rellenar lista de IDs seleccionados desde la persona cargada
+                _habitosSeleccionados = p.Habitos?.Select(h => h.Id).ToList() ?? new List<int>();
             }
         }
         else
         {
             // Nuevo registro: asegurar instancia no nula
             _persona ??= new Persona();
+            _habitosSeleccionados = new List<int>();
         }
     }
+
+    private void OnHabitoChanged(int habitoId, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!_habitosSeleccionados.Contains(habitoId))
+                _habitosSeleccionados.Add(habitoId);
+        }
+        else
+        {
+            if (_habitosSeleccionados.Contains(habitoId))
+                _habitosSeleccionados.Remove(habitoId);
+        }
+    }
+
+    private bool IsHabitoSelected(int id) => _habitosSeleccionados.Contains(id);
 
     private async Task Guardar()
     {
         if (_persona == null) return;
+
+        // Sincronizar la colección de hábitos de la persona con los IDs seleccionados
+        _persona.Habitos = _habitos.Where(h => _habitosSeleccionados.Contains(h.Id)).ToList();
 
         if (Id.HasValue && Id.Value > 0)
         {

@@ -11,6 +11,22 @@
     <PropertyColumn Property="@(p => p.Telefono)" Title="Teléfono" />
     <PropertyColumn Property="@(p => p.Correo)" Title="Correo" />
     <PropertyColumn Property="@(p => p.Genero)" Title="Género" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Clasificacion!.Nombre)" Title="Clasificación" Sortable="true" />
+    
+    <TemplateColumn Title="Hábitos">
+        @if (context.Habitos != null && context.Habitos.Any())
+        {
+            foreach (var h in context.Habitos)
+            {
+                <span class="badge bg-secondary me-1">@h.Nombre</span>
+            }
+        }
+        else
+        {
+            <span class="text-muted">—</span>
+        }
+    </TemplateColumn>
+
     <TemplateColumn Title="Actions">
         <button class="btn btn-outline-primary" @onclick="@(() => Edit(context))">Editar</button>
         <button class="btn btn-outline-danger" @onclick="@(() => Delete(context))">Eliminar</button>
