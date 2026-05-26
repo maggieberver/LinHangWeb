@@ -1,10 +1,14 @@
 ﻿@page "/personas"
 @using System.Threading.Tasks
+@using System.Text
+@using System.Globalization
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 @inject IRepositorioPersonas _repositorioPersonas
 @inject NavigationManager _navigationManager
 <h3>Personas</h3>
 <button class="btn btn-primary mb-3" @onclick="@(() => _navigationManager.NavigateTo("/personas/nueva"))">Nueva Persona</button>
+<button class="btn btn-primary mb-3" @onclick="ExportCsv">Exportar CSV</button>
 
 <QuickGrid Items="_personas.AsQueryable()" Class="table table-striped" Pagination="_paginationState">
     <PropertyColumn Property="@(p => p.Nombre)" Title="Nombre" Sortable="true" />
@@ -98,6 +102,56 @@
         {
             await _repositorioPersonas.EliminarPersona(persona.Id);
             _personas.Remove(persona);
+        }
+    }
+
+    private async Task ExportCsv()
+    {
+        var csv = BuildCsv(_personas);
+        var preamble = Encoding.UTF8.GetPreamble(); // BOM: EF BB BF
+        var csvBytes = preamble.Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
+        var base64 = Convert.ToBase64String(csvBytes);
+        var filename = $"usuarios_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+        await JS.InvokeVoidAsync("blazorDownloadFileFromBase64", filename, base64);
+    }
+
+    private string BuildCsv(IEnumerable<Persona> personas)
+    {
+        var sb = new StringBuilder();
+        // Cabecera (ajusta según tus propiedades)
+        sb.AppendLine("Nombre,Correo,Teléfono,Género");
+
+        foreach (var u in personas)
+        {
+            sb.AppendLine($"{Escape(u.Nombre)},{Escape(u.Correo)},{Escape(u.Telefono)},{Escape(u.Genero)}");
+        }
+
+        return sb.ToString();
+    }
+
+    private static string Escape(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        var needsQuotes = s.Contains(';') || s.Contains('"') || s.Contains('\n') || s.Contains('\r');
+        if (s.Contains('"')) s = s.Replace("\"", "\"\"");
+        return needsQuotes ? $"\"{s}\"" : s;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var script = @"
+                window.blazorDownloadFileFromBase64 = (fileName, base64) => {
+                    const link = document.createElement('a');
+                    link.href = 'data:text/csv;charset=utf-8;base64,' + base64;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+            ";
+            await JS.InvokeVoidAsync("eval", script);
         }
     }
 }
