@@ -314,9 +314,16 @@
 
         Pedido pedido = new() {
             IdCliente = clientePedido.IdCliente,
+
+            NombreCliente = cliente.Nombre,
+            TelefonoCliente = cliente.Telefono,
+            CorreoCliente = cliente.Correo,
+            DireccionCliente = cliente.Direccion,
+
             Fecha = DateTime.Now,
             Estado = "Pendiente",
             Total = Total,
+
             Detalles = productos
                 .Where(p => cantidades[p.IdProducto] > 0)
                 .Select(p => new DetallePedido {

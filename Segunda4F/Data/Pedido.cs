@@ -16,5 +16,9 @@ namespace Segunda4F.Data {
         virtual public Cliente? Cliente { get; set; }
 
         virtual public List<DetallePedido>? Detalles { get; set; }
+        public string NombreCliente { get; set; } = string.Empty;
+        public string TelefonoCliente { get; set; } = string.Empty;
+        public string CorreoCliente { get; set; } = string.Empty;
+        public string DireccionCliente { get; set; } = string.Empty;
     }
 }

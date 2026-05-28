@@ -21,5 +21,13 @@ namespace Segunda4F.Repositorios {
                 .ThenInclude(d => d.Producto)
                 .ToListAsync();
         }
+        public async Task ActualizarEstadoPedido(int idPedido, string estado) {
+            var pedido = await _context.Pedidos.FindAsync(idPedido);
+
+            if (pedido != null) {
+                pedido.Estado = estado;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

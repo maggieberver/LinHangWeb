@@ -7,14 +7,14 @@
 
 @inject IRepositorioPedidos repositorioPedidos
 
-<PageTitle>Pedidos realizados</PageTitle>
+<PageTitle>Pedidos</PageTitle>
 
 <div class="pedidos-page">
 
     <div class="pedidos-container">
 
         <h1 class="titulo-pedidos">
-            PEDIDOS REALIZADOS
+            Pedidos realizados
         </h1>
 
         <input class="form-control buscador"
@@ -23,53 +23,36 @@
                @bind:event="oninput" />
 
         @if (pedidos == null) {
-            <div class="alert alert-light">
-                Cargando...
-            </div>
+            <div class="alert alert-light">Cargando...</div>
         } else if (!PedidosFiltrados.Any()) {
-            <div class="alert alert-warning">
-                No hay pedidos registrados.
-            </div>
+            <div class="alert alert-warning">No hay pedidos registrados.</div>
         } else {
             <div class="tabla-wrapper">
 
                 <QuickGrid Items="PedidosFiltrados.AsQueryable()"
                            Class="table table-hover tabla-pedidos">
 
-                    <PropertyColumn Property="p => p.Cliente!.Nombre"
-                                    Title="Cliente"
-                                    Sortable="true" />
+                    <PropertyColumn Property="p => p.NombreCliente" Title="Cliente" Sortable="true" />
+                    <PropertyColumn Property="p => p.TelefonoCliente" Title="Teléfono" Sortable="true" />
+                    <PropertyColumn Property="p => p.CorreoCliente" Title="Correo" Sortable="true" />
+                    <PropertyColumn Property="p => p.DireccionCliente" Title="Dirección" Sortable="true" />
 
-                    <PropertyColumn Property="p => p.Cliente!.Telefono"
-                                    Title="Teléfono"
-                                    Sortable="true" />
+                    <TemplateColumn Title="Estado">
+                        <select class="form-select estado-select"
+                                value="@context.Estado"
+                                @onchange="async e => await CambiarEstado(context, e.Value?.ToString()!)">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Entregado">Entregado</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </TemplateColumn>
 
-                    <PropertyColumn Property="p => p.Cliente!.Correo"
-                                    Title="Correo"
-                                    Sortable="true" />
-
-                    <PropertyColumn Property="p => p.Cliente!.Direccion"
-                                    Title="Dirección"
-                                    Sortable="true" />
-
-                    <PropertyColumn Property="p => p.Fecha"
-                                    Title="Fecha"
-                                    Sortable="true" />
-
-                    <PropertyColumn Property="p => p.Estado"
-                                    Title="Estado"
-                                    Sortable="true" />
-
-                    <PropertyColumn Property="p => p.Total"
-                                    Title="Total"
-                                    Sortable="true" />
+                    <PropertyColumn Property="p => p.Total" Title="Total" Sortable="true" />
 
                     <TemplateColumn Title="Productos">
                         <ul class="lista-productos">
                             @foreach (var detalle in context.Detalles!) {
-                                <li>
-                                    @($"{detalle.Producto?.Nombre} x{detalle.Cantidad}")
-                                </li>
+                                <li>@($"{detalle.Producto?.Nombre} x{detalle.Cantidad}")</li>
                             }
                         </ul>
                     </TemplateColumn>
@@ -84,7 +67,6 @@
 </div>
 
 <style>
-
     .pedidos-page {
         width: 100%;
         min-height: calc(100vh - 98px);
@@ -100,7 +82,7 @@
         color: white;
         margin-bottom: 30px;
         font-family: 'ZCOOL XiaoWei', serif;
-        font-size: 2rem;
+        font-size: 3.2rem;
         letter-spacing: 3px;
     }
 
@@ -141,6 +123,11 @@
             vertical-align: top;
         }
 
+    .estado-select {
+        min-width: 140px;
+        border-radius: 10px;
+    }
+
     .lista-productos {
         margin: 0;
         padding-left: 20px;
@@ -151,7 +138,6 @@
         }
 
     @@media (max-width: 768px) {
-
         .pedidos-container {
             width: 98%;
         }
@@ -160,11 +146,9 @@
             padding: 10px;
         }
     }
-
 </style>
 
 @code {
-
     List<Pedido>? pedidos;
     string busqueda = "";
 
@@ -185,4 +169,8 @@
         pedidos = await repositorioPedidos.ObtenerPedidos();
     }
 
+    async Task CambiarEstado(Pedido pedido, string nuevoEstado) {
+        pedido.Estado = nuevoEstado;
+        await repositorioPedidos.ActualizarEstadoPedido(pedido.IdPedido, nuevoEstado);
+    }
 }
