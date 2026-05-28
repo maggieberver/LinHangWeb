@@ -1,0 +1,342 @@
+﻿@page "/pedido"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Segunda4F.Data
+@using Segunda4F.Repositorios
+
+@inject IRepositorioProductos repositorioProductos
+@inject IRepositorioPedidos repositorioPedidos
+@inject IRepositorioClientes repositorioClientes
+
+<PageTitle>Realizar pedido</PageTitle>
+
+<div class="pedido-page">
+    <div class="pedido-container">
+
+        <h1 class="titulo-pedido">REALIZAR PEDIDO</h1>
+
+        @if (!string.IsNullOrEmpty(mensaje)) {
+            <div class="alert @claseMensaje">@mensaje</div>
+        }
+
+        <EditForm EditContext="contextoCliente" FormName="frmPedido" OnSubmit="GuardarPedido">
+            <DataAnnotationsValidator />
+
+            <div class="card tarjeta-formulario">
+                <div class="card-header encabezado-card">
+                    Datos del cliente
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label>Teléfono</label>
+                        <div class="input-group">
+                            <InputText class="form-control" @bind-Value="cliente.Telefono" />
+                            <button type="button" class="btn btn-rojo" @onclick="BuscarCliente">
+                                Buscar cliente
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => cliente.Telefono)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Nombre</label>
+                        <InputText class="form-control" @bind-Value="cliente.Nombre" />
+                        <ValidationMessage For="@(() => cliente.Nombre)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Correo</label>
+                        <InputText class="form-control" @bind-Value="cliente.Correo" />
+                        <ValidationMessage For="@(() => cliente.Correo)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Dirección</label>
+                        <InputText class="form-control" @bind-Value="cliente.Direccion" />
+                        <ValidationMessage For="@(() => cliente.Direccion)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="titulo-menu">MENÚ</h2>
+
+            <div class="row">
+                @foreach (var producto in productos) {
+                    <div class="col-md-4 mb-4">
+                        <div class="card tarjeta-producto">
+                            <div class="card-body">
+                                <h5>@producto.Nombre</h5>
+                                <p>@producto.Descripcion</p>
+                                <p class="precio">$@producto.Precio</p>
+
+                                <label>Cantidad</label>
+                                <input type="number"
+                                       min="0"
+                                       class="form-control"
+                                       @bind="cantidades[producto.IdProducto]" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (mostrarErrorProductos) {
+                <div class="text-danger mb-3">
+                    Selecciona al menos un producto.
+                </div>
+            }
+
+            <div class="resumen-pedido">
+                <h3>Total: $@Total</h3>
+
+                <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-4">
+                    Aceptar pedido
+                </button>
+
+                <a href="/" class="btn btn-secondary btn-lg rounded-pill px-4">
+                    Cancelar
+                </a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<style>
+    .pedido-page {
+        width: 100%;
+        min-height: calc(100vh - 98px);
+        padding: 40px 0;
+    }
+
+    .pedido-container {
+        width: 92%;
+        margin: auto;
+    }
+
+    .titulo-pedido,
+    .titulo-menu {
+        color: white;
+        font-family: 'ZCOOL XiaoWei', serif;
+        letter-spacing: 3px;
+        margin-bottom: 30px;
+    }
+
+    .titulo-pedido {
+        font-size: 2rem;
+    }
+
+    .titulo-menu {
+        font-size: 2rem;
+        margin-top: 40px;
+    }
+
+    .tarjeta-formulario,
+    .tarjeta-producto {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .encabezado-card {
+        background: #b10000;
+        color: white;
+        font-weight: bold;
+        padding: 16px 20px;
+    }
+
+    .card-body {
+        padding: 22px;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .tarjeta-producto {
+        height: 100%;
+    }
+
+        .tarjeta-producto h5 {
+            font-weight: bold;
+            color: #7a0000;
+        }
+
+    .precio {
+        color: #008547;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .btn-rojo {
+        background: #b10000;
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+
+        .btn-rojo:hover {
+            background: #7a0000;
+            color: white;
+        }
+
+    .resumen-pedido {
+        background: rgba(255,255,255,0.08);
+        border-radius: 22px;
+        padding: 25px;
+        margin: 25px 0;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+        .resumen-pedido h3 {
+            margin-right: auto;
+            margin-bottom: 0;
+            font-weight: bold;
+        }
+
+    @@media (max-width: 768px) {
+        .pedido-container {
+            width: 96%;
+        }
+
+        .titulo-pedido {
+            font-size: 2.5rem;
+        }
+
+        .resumen-pedido {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+            .resumen-pedido h3 {
+                margin-right: 0;
+            }
+    }
+</style>
+
+@code {
+    Cliente cliente = new();
+    EditContext contextoCliente = default!;
+
+    List<Producto> productos = new();
+    Dictionary<int, int> cantidades = new();
+
+    string mensaje = "";
+    string claseMensaje = "alert-danger";
+    bool mostrarErrorProductos = false;
+
+    decimal Total => productos.Sum(p => p.Precio * cantidades[p.IdProducto]);
+
+    protected override async Task OnInitializedAsync() {
+        contextoCliente = new EditContext(cliente);
+        productos = await repositorioProductos.ObtenerProductos();
+
+        foreach (var producto in productos) {
+            cantidades[producto.IdProducto] = 0;
+        }
+    }
+
+    async Task BuscarCliente() {
+        mensaje = "";
+
+        if (string.IsNullOrWhiteSpace(cliente.Telefono)) {
+            mensaje = "Escribe el teléfono del cliente para buscarlo.";
+            claseMensaje = "alert-danger";
+            return;
+        }
+
+        var clienteEncontrado = await repositorioClientes.ObtenerClientePorTelefonoOCorreo(cliente.Telefono, "");
+
+        if (clienteEncontrado != null) {
+            cliente = new Cliente {
+                IdCliente = clienteEncontrado.IdCliente,
+                Nombre = clienteEncontrado.Nombre,
+                Telefono = clienteEncontrado.Telefono,
+                Correo = clienteEncontrado.Correo,
+                Direccion = clienteEncontrado.Direccion
+            };
+
+            contextoCliente = new EditContext(cliente);
+
+            mensaje = "Cliente encontrado. Los datos se llenaron automáticamente.";
+            claseMensaje = "alert-success";
+        } else {
+            mensaje = "Cliente no encontrado. Puedes llenar los datos manualmente.";
+            claseMensaje = "alert-warning";
+        }
+    }
+
+    async Task GuardarPedido(EditContext editContext) {
+        mensaje = "";
+        mostrarErrorProductos = false;
+
+        if (!editContext.Validate()) {
+            mensaje = "Revisa los datos del cliente.";
+            claseMensaje = "alert-danger";
+            return;
+        }
+
+        if (!cantidades.Any(c => c.Value > 0)) {
+            mostrarErrorProductos = true;
+            mensaje = "Selecciona al menos un producto.";
+            claseMensaje = "alert-danger";
+            return;
+        }
+
+        Cliente clientePedido;
+
+        var clienteExistente = await repositorioClientes.ObtenerClientePorTelefonoOCorreo(cliente.Telefono, cliente.Correo);
+
+        if (clienteExistente != null) {
+            clienteExistente.Nombre = cliente.Nombre;
+            clienteExistente.Telefono = cliente.Telefono;
+            clienteExistente.Correo = cliente.Correo;
+            clienteExistente.Direccion = cliente.Direccion;
+
+            await repositorioClientes.ActualizarCliente(clienteExistente);
+            clientePedido = clienteExistente;
+        } else {
+            await repositorioClientes.AgregarCliente(cliente);
+            clientePedido = cliente;
+        }
+
+        Pedido pedido = new() {
+            IdCliente = clientePedido.IdCliente,
+            Fecha = DateTime.Now,
+            Estado = "Pendiente",
+            Total = Total,
+            Detalles = productos
+                .Where(p => cantidades[p.IdProducto] > 0)
+                .Select(p => new DetallePedido {
+                    IdProducto = p.IdProducto,
+                    Cantidad = cantidades[p.IdProducto],
+                    Subtotal = p.Precio * cantidades[p.IdProducto]
+                })
+                .ToList()
+        };
+
+        await repositorioPedidos.AgregarPedido(pedido);
+
+        mensaje = "Pedido guardado correctamente.";
+        claseMensaje = "alert-success";
+
+        cliente = new();
+        contextoCliente = new EditContext(cliente);
+
+        foreach (var producto in productos) {
+            cantidades[producto.IdProducto] = 0;
+        }
+    }
+}

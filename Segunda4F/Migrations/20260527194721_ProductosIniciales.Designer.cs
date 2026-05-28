@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Segunda4F.Data;
 
@@ -11,9 +12,11 @@ using Segunda4F.Data;
 namespace Segunda4F.Migrations
 {
     [DbContext(typeof(DirectorioDBContext))]
-    partial class DirectorioDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260527194721_ProductosIniciales")]
+    partial class ProductosIniciales
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,14 +71,20 @@ namespace Segunda4F.Migrations
                     b.Property<int>("IdProducto")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PedidoIdPedido")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductoIdProducto")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("IdDetalle");
 
-                    b.HasIndex("IdPedido");
+                    b.HasIndex("PedidoIdPedido");
 
-                    b.HasIndex("IdProducto");
+                    b.HasIndex("ProductoIdProducto");
 
                     b.ToTable("DetallePedidos");
                 });
@@ -87,6 +96,9 @@ namespace Segunda4F.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPedido"));
+
+                    b.Property<int?>("ClienteIdCliente")
+                        .HasColumnType("int");
 
                     b.Property<string>("Estado")
                         .IsRequired()
@@ -103,7 +115,7 @@ namespace Segunda4F.Migrations
 
                     b.HasKey("IdPedido");
 
-                    b.HasIndex("IdCliente");
+                    b.HasIndex("ClienteIdCliente");
 
                     b.ToTable("Pedidos");
                 });
@@ -198,15 +210,11 @@ namespace Segunda4F.Migrations
                 {
                     b.HasOne("Segunda4F.Data.Pedido", "Pedido")
                         .WithMany("Detalles")
-                        .HasForeignKey("IdPedido")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PedidoIdPedido");
 
                     b.HasOne("Segunda4F.Data.Producto", "Producto")
                         .WithMany("Detalles")
-                        .HasForeignKey("IdProducto")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductoIdProducto");
 
                     b.Navigation("Pedido");
 
@@ -217,9 +225,7 @@ namespace Segunda4F.Migrations
                 {
                     b.HasOne("Segunda4F.Data.Cliente", "Cliente")
                         .WithMany("Pedidos")
-                        .HasForeignKey("IdCliente")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ClienteIdCliente");
 
                     b.Navigation("Cliente");
                 });

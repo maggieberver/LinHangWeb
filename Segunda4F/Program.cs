@@ -11,9 +11,9 @@ builder.Services.AddRazorComponents()
 builder.Services.AddDbContext<DirectorioDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IRepositorioPersonas, RepositorioPersonas>();
-builder.Services.AddScoped<IRepositorioClasificaciones,RepositorioClasificaciones>();
-builder.Services.AddScoped<IRepositorioHabitos, RepositorioHabitos>();
+builder.Services.AddScoped<IRepositorioProductos, RepositorioProductos>();
+builder.Services.AddScoped<IRepositorioPedidos, RepositorioPedidos>();
+builder.Services.AddScoped<IRepositorioClientes, RepositorioClientes>();
 
 var app = builder.Build();
 

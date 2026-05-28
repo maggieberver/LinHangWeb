@@ -1,0 +1,188 @@
+﻿@page "/pedidos"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Segunda4F.Data
+@using Segunda4F.Repositorios
+
+@inject IRepositorioPedidos repositorioPedidos
+
+<PageTitle>Pedidos realizados</PageTitle>
+
+<div class="pedidos-page">
+
+    <div class="pedidos-container">
+
+        <h1 class="titulo-pedidos">
+            PEDIDOS REALIZADOS
+        </h1>
+
+        <input class="form-control buscador"
+               placeholder="Buscar por cliente, teléfono, correo, estado o producto..."
+               @bind="busqueda"
+               @bind:event="oninput" />
+
+        @if (pedidos == null) {
+            <div class="alert alert-light">
+                Cargando...
+            </div>
+        } else if (!PedidosFiltrados.Any()) {
+            <div class="alert alert-warning">
+                No hay pedidos registrados.
+            </div>
+        } else {
+            <div class="tabla-wrapper">
+
+                <QuickGrid Items="PedidosFiltrados.AsQueryable()"
+                           Class="table table-hover tabla-pedidos">
+
+                    <PropertyColumn Property="p => p.Cliente!.Nombre"
+                                    Title="Cliente"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="p => p.Cliente!.Telefono"
+                                    Title="Teléfono"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="p => p.Cliente!.Correo"
+                                    Title="Correo"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="p => p.Cliente!.Direccion"
+                                    Title="Dirección"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="p => p.Fecha"
+                                    Title="Fecha"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="p => p.Estado"
+                                    Title="Estado"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="p => p.Total"
+                                    Title="Total"
+                                    Sortable="true" />
+
+                    <TemplateColumn Title="Productos">
+                        <ul class="lista-productos">
+                            @foreach (var detalle in context.Detalles!) {
+                                <li>
+                                    @($"{detalle.Producto?.Nombre} x{detalle.Cantidad}")
+                                </li>
+                            }
+                        </ul>
+                    </TemplateColumn>
+
+                </QuickGrid>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+<style>
+
+    .pedidos-page {
+        width: 100%;
+        min-height: calc(100vh - 98px);
+        padding: 40px 0;
+    }
+
+    .pedidos-container {
+        width: 92%;
+        margin: auto;
+    }
+
+    .titulo-pedidos {
+        color: white;
+        margin-bottom: 30px;
+        font-family: 'ZCOOL XiaoWei', serif;
+        font-size: 2rem;
+        letter-spacing: 3px;
+    }
+
+    .buscador {
+        margin-bottom: 25px;
+        border-radius: 14px;
+        padding: 14px;
+        border: none;
+    }
+
+    .tabla-wrapper {
+        padding: 0;
+        border-radius: 24px;
+        overflow-x: auto;
+    }
+
+    .tabla-pedidos {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+        .tabla-pedidos th {
+            background: #b10000;
+            padding: 18px !important;
+            font-size: 1rem;
+        }
+
+            .tabla-pedidos th,
+            .tabla-pedidos th button,
+            .tabla-pedidos th button span {
+                color: white !important;
+            }
+
+        .tabla-pedidos td {
+            padding: 18px !important;
+            vertical-align: top;
+        }
+
+    .lista-productos {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+        .lista-productos li {
+            margin-bottom: 6px;
+        }
+
+    @@media (max-width: 768px) {
+
+        .pedidos-container {
+            width: 98%;
+        }
+
+        .tabla-wrapper {
+            padding: 10px;
+        }
+    }
+
+</style>
+
+@code {
+
+    List<Pedido>? pedidos;
+    string busqueda = "";
+
+    IEnumerable<Pedido> PedidosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? pedidos!
+            : pedidos!.Where(p =>
+                (p.Cliente?.Nombre?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Cliente?.Telefono?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Cliente?.Correo?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Cliente?.Direccion?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Estado?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Detalles?.Any(d =>
+                    d.Producto!.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) ?? false)
+            );
+
+    protected override async Task OnInitializedAsync() {
+        pedidos = await repositorioPedidos.ObtenerPedidos();
+    }
+
+}
